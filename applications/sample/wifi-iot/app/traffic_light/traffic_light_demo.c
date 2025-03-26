@@ -27,7 +27,7 @@ static void StartTrafficLightTask(void)
     init();
     while (1)
     {
-        // 绿灯亮
+        // 绿灯亮 此处VALUE1为亮 而LED中VALUE0为亮
         GpioSetOutputVal(WIFI_IOT_IO_NAME_GPIO_11, WIFI_IOT_GPIO_VALUE1);
         usleep(3000 * 1000);// sleep 3s
         // 绿灯灭、黄灯亮

@@ -1,6 +1,1 @@
-# 忽略所有文件
-*
-
-# 取消忽略
-!/applications/sample/wifi-iot/app/
-
+/out/
