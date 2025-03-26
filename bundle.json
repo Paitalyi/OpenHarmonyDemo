@@ -1,0 +1,14 @@
+{
+    "ohos": {
+        "board": "hi3516dv300",
+        "kernel": "liteos_a",
+        "os": "1.0.0"
+    },
+    "name": "code_1_0",
+    "version": "1.0.0",
+    "scripts": {
+        "build": "python build.py ipcamera -p hi3516dv300_liteos_a -b debug",
+        "clean": "",
+        "upload": "node %UPLOAD_SCRIPT%"
+    }
+}

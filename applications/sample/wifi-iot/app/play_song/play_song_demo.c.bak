@@ -1,0 +1,132 @@
+#include <stdio.h>
+#include <unistd.h>
+#include "ohos_init.h"
+#include "cmsis_os2.h"
+#include "wifiiot_gpio.h"
+#include "wifiiot_gpio_ex.h"
+#include "wifiiot_watchdog.h"
+#include "wifiiot_pwm.h"
+#include "hi_pwm.h"
+
+// 扩展音阶频率表（40MHz时钟源）
+static const uint16_t g_tuneFreqs[] = {
+    0,      // 占位
+    38223,  // C6 (1)
+    34052,  // D6 (2)
+    30338,  // E6 (3)
+    28635,  // F6 (4)
+    25511,  // G6 (5)
+    22728,  // A6 (6)
+    20249,  // B6 (7)
+    19111,  // C7 (1高八度)
+    17026,  // D7 (2高八度)
+    15169,  // E7 (3高八度)
+    14317,  // F7 (4高八度)
+    12755,  // G7 (5高八度)
+    11364,  // A7 (6高八度)
+    10124,  // B7 (7高八度)
+    9567    // C8 (超高频1)
+};
+
+// 《世末歌者》完整主旋律简谱
+static const uint8_t g_scoreNotes[] = {
+    // 前奏
+    5,5,6,5,1,2,3, 3,2,1,5,5,6,5,2,3,
+    4,4,3,2,1,1,2,3,4,3,2,1,2,5,5,5,
+    
+    // 主歌A
+    5,5,6,5,1,2,3, 3,2,1,5,5,6,5,2,3,
+    4,4,3,2,1,1,2,3,4,3,2,1,1,8,8,8,
+    
+    // 副歌B
+    5,6,7,1,7,6,5,3, 5,6,7,1,7,6,5,3,
+    4,5,6,5,4,3,2,1, 2,3,4,3,2,1,2,5,
+    
+    // 间奏（简化）
+    1,2,3,4,5,6,5,4, 3,2,1,2,3,4,5,8,
+    
+    // 主歌A'
+    5,5,6,5,1,2,3, 3,2,1,5,5,6,5,2,3,
+    4,4,3,2,1,1,2,3,4,3,2,1,1,8,8,8,
+    
+    // 副歌B'（升调变奏）
+    6,7,1,2,1,7,6,4, 6,7,1,2,1,7,6,4,
+    5,6,7,6,5,4,3,2, 3,4,5,4,3,2,3,6,
+    
+    // 结尾
+    1,7,6,5,4,3,2,1, 1,8,8,8,8,8,8,8
+};
+
+// 音符时值（1/4拍为单位）
+static const uint8_t g_scoreDurations[] = {
+    // 前奏
+    4,4,4,4,4,4,8, 4,4,4,4,4,4,4,4,8,
+    4,4,4,4,4,4,4,4,4,4,4,4,8,2,2,2,
+    
+    // 主歌A
+    4,4,4,4,4,4,8, 4,4,4,4,4,4,4,4,8,
+    4,4,4,4,4,4,4,4,4,4,4,4,8,4,4,8,
+    
+    // 副歌B
+    2,2,2,2,2,2,4,4, 2,2,2,2,2,2,4,4,
+    2,2,2,2,2,2,4,4, 2,2,2,2,2,2,4,4,
+    
+    // 间奏
+    2,2,2,2,2,2,2,2, 2,2,2,2,2,2,4,8,
+    
+    // 主歌A'
+    4,4,4,4,4,4,8, 4,4,4,4,4,4,4,4,8,
+    4,4,4,4,4,4,4,4,4,4,4,4,8,4,4,8,
+    
+    // 副歌B'
+    2,2,2,2,2,2,4,4, 2,2,2,2,2,2,4,4,
+    2,2,2,2,2,2,4,4, 2,2,2,2,2,2,4,4,
+    
+    // 结尾
+    4,4,4,4,4,4,8,8, 4,4,4,4,4,4,4,8
+};
+
+static void *BeeperMusicTask(const char *arg) {
+    (void)arg;
+    GpioInit();
+    IoSetFunc(WIFI_IOT_IO_NAME_GPIO_9, WIFI_IOT_IO_FUNC_GPIO_9_PWM0_OUT);
+    PwmInit(WIFI_IOT_PWM_PORT_PWM0);
+    WatchDogDisable();
+
+    printf("Playing 世末歌者完整版...\r\n");
+    hi_pwm_set_clock(PWM_CLK_XTAL);
+
+    while (1) {
+        for (size_t i = 0; i < sizeof(g_scoreNotes)/sizeof(g_scoreNotes[0]); i++) {
+            uint8_t note = g_scoreNotes[i];
+            if(note == 8) { // 休止符处理
+                usleep(g_scoreDurations[i] * 125 * 1000);
+                continue;
+            }
+            
+            uint16_t freq = g_tuneFreqs[note];
+            uint32_t duration = g_scoreDurations[i] * 125 * 1000;
+            
+            PwmStart(WIFI_IOT_PWM_PORT_PWM0, freq/2, freq);
+            usleep(duration);
+            PwmStop(WIFI_IOT_PWM_PORT_PWM0);
+            usleep(20 * 1000); // 添加音符间短暂间隔
+        }
+        usleep(3000 * 1000); // 循环间隔3秒
+    }
+    return NULL;
+}
+
+static void StartBeepMusicTask(void) {
+    osThreadAttr_t attr = {
+        .name = "BeeperMusicTask",
+        .stack_size = 4096,
+        .priority = osPriorityHigh  // 提高优先级保证节奏稳定
+    };
+    
+    if (osThreadNew((osThreadFunc_t)BeeperMusicTask, NULL, &attr) == NULL) {
+        printf("Failed to create music task!\n");
+    }
+}
+
+APP_FEATURE_INIT(StartBeepMusicTask);

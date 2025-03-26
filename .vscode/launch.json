@@ -1,0 +1,58 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "hi3861-Debug-jlink",
+            "cwd": "${workspaceRoot}",
+            "executable": "./output/bin/Hi3861_demo_allinone.elf",
+            "request": "launch",
+            "type": "deveco-debug",
+            "servertype": "jlink",
+            "device": "Risc-V",
+            "interface": "jtag",
+            "maxBreakpoints": "3",
+            "serverArgs": [
+                "-vd"
+            ],
+            "serverpath": "${config:deveco-debug.JLinkGDBServerPath}",
+            "armToolchainPath": "${config:deveco-debug.armToolchainPath}",
+            "toolchainPrefix": "riscv32-unknown-elf",
+            "showDevDebugOutput": "0",
+            "postLaunchCommands": [
+                "set remotetimeout unlimited",
+                "delete",
+                "b app_main",
+                "continue"
+            ]
+        },
+        {
+            "cwd": "${workspaceRoot}",
+            "executable": "./kernel/liteos_a/out/hi3516dv300/liteos",
+            "name": "hi3516dv300-openocd-debug-gdb",
+            "request": "attach",
+            "type": "deveco-debug",
+            "servertype": "openocd",
+            "showDevDebugOutput": "0",
+            "maxBreakpoints": "6",
+            "configFiles": [
+                "C:\\Users\\Administrator\\.deveco\\ohos_bundles\\@huawei\\deveco_config\\openocd\\hi3516dv300\\openocd.cfg",
+                "C:\\Users\\Administrator\\.deveco\\ohos_bundles\\@huawei\\deveco_config\\openocd\\hi3516dv300\\chip.cfg"
+            ],
+            "openOCDLaunchCommands": [
+                "init"
+            ],
+            "postAttachCommands": [
+                "show substitute-path",
+                "monitor cortex_a maskisr on",
+                "monitor gdb_breakpoint_override hard",
+                "set remotetimeout unlimited",
+                "set $pc=0x80000000",
+                "break OsMain"
+            ],
+            "postRestartCommands": [
+                "monitor mww phys 0x12020004 0"
+            ],
+            "armToolchainPath": "${config:deveco-debug.armToolchainPath}"
+        }
+    ]
+}
