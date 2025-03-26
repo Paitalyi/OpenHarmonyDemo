@@ -6,7 +6,8 @@ lite_component("app") {
     features = [
         # "startup",
         # "led:leddemo",
-        # "traffic_light:trafficlight"
-        "play_song:playsong"
+        # "traffic_light:trafficlight",
+        # "play_song:playsong",
+	"workspace/smart_home_2.0/toilet:smart_home_2.0",
     ]
 }
