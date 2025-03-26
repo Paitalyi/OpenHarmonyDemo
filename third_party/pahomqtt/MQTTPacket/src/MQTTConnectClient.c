@@ -169,6 +169,7 @@ exit:
   */
 int MQTTSerialize_zero(unsigned char* buf, int buflen, unsigned char packettype)
 {
+	buflen = buflen;
 	MQTTHeader header = {0};
 	int rc = -1;
 	unsigned char *ptr = buf;
