@@ -12,7 +12,7 @@ int toilet_light_state = 0; //卫生间灯的工作状态
 void init(void)
 {
     GpioInit();
-    //设置红色,蓝 色,绿色 LED IO为输出状态
+    //设置红色,蓝色,绿色 LED IO为输出状态
     IoSetFunc(WIFI_IOT_IO_NAME_GPIO_10, WIFI_IOT_IO_FUNC_GPIO_10_GPIO);
     GpioSetDir(WIFI_IOT_IO_NAME_GPIO_10, WIFI_IOT_GPIO_DIR_OUT);
 
@@ -41,7 +41,7 @@ void toilet_entry(void *arg)
     while (1)
     {
 
-        //读取人体红外传感器，
+        //读取人体红外传感器
         GpioGetInputVal(WIFI_IOT_IO_NAME_GPIO_7, &rel);
 
         toilet_state = rel;
@@ -51,7 +51,6 @@ void toilet_entry(void *arg)
         //如果有人
         if (toilet_state)
         {
-
             GpioSetOutputVal(WIFI_IOT_IO_NAME_GPIO_10, (int)rel);
             GpioSetOutputVal(WIFI_IOT_IO_NAME_GPIO_11, (int)rel);
             GpioSetOutputVal(WIFI_IOT_IO_NAME_GPIO_12, (int)rel);

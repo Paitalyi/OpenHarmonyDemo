@@ -33,7 +33,7 @@ int mqtt_connect(void)
 	int payloadlen = strlen(payload);
 	int len = 0;
 
-	char *host = "192.168.2.3";
+	char *host = "192.168.2.131"; // MQTT服务器地址
 	int port = 1883;
 
 	mysock = transport_open(host, port);
@@ -62,13 +62,13 @@ int mqtt_connect(void)
 			goto exit;
 		}
 	}
-	else
+	else{
+		printf("CONNACK not received\n");
 		goto exit;
-
-	topicString.cstring = "testtopic";
+	}
+	topicString.cstring = "toilet";
 	while (!toStop)
 	{
-
 		snprintf(payload, sizeof(payload), "{\"toilet_state\":%d,\"light_state\":%d}", toilet_state, toilet_light_state);
 		printf("published: %s\n\r", payload);
 		payloadlen = strlen(payload);

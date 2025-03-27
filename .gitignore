@@ -1,1 +1,13 @@
+# Folders:
+/docs/
 /out/
+/vendor/
+/.deveco/
+/.vscode/
+
+# Python:
+*.py[cod]
+*.so
+*.egg
+*.egg-info
+dist
