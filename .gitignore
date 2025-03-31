@@ -2,6 +2,15 @@
 /docs/
 /out/
 /vendor/
+/base/
+/drivers/
+/build/
+/foundation/
+/kernel/
+/prebuilts/
+/test/
+/third_party/
+/utils/
 /.deveco/
 /.vscode/
 
